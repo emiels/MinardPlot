@@ -52,7 +52,7 @@ shinyServer(function(input, output) {
                 line2 <- paste(round(troop1[fitRow(),4]/troop1[1,4],2)*100, 
                                "% of his initial troop strength left.", 
                                sep = " ")
-                HTML(paste(line1, line2, sep = '<br/>'))
+                HTML(paste(line1, line2, sep = ' '))
         })
         output$plotSurvivors <- renderPlot({
                 ggplot(data = troop1, aes(date, survivors)) + 
