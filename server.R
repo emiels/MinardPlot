@@ -1,4 +1,3 @@
-
 # Server sidelogic for the DDP assignment based on the minard plot and dataset
 
 library(shiny)
@@ -8,9 +7,9 @@ library(ggplot2)
 #set up of the plot based on the ggplot example by Hadley Wickham
 Sys.setlocale("LC_TIME", "C") #i have a different locale, dates are in US notation
 troopsES <- read.csv('troopsES.csv')
-troop1 <- subset(troopsES, group == 1)
+troop1 <- subset(troopsES, group == 1) #only troops heading for Moscow
 troop1$date <- as.Date(as.character(troop1$date))
-startcampain <- min(troop1$date)
+startcampain <- min(troop1$date) # first date in campaign
 troop1$dic <- as.numeric(
         troop1$date-startcampain) # extra variable 'Days In Campaign- dic'
 
@@ -20,6 +19,8 @@ xlim <- scale_x_continuous(limits = c(24, 39))
 
 shinyServer(function(input, output) {
         fitRow <- reactive({
+                # based on the selected day of the slider (can be any date in periode)
+                # the nearest date in the table (<= selected date) is fitted (fitXX)
                 selectedDIC <-
                         as.numeric(input$myDate - startcampain)
                 fitDIC <- max(troop1$dic[troop1$dic <= selectedDIC])
@@ -41,12 +42,14 @@ shinyServer(function(input, output) {
                         scale_size(range = c(1, 10)) +
                         scale_colour_manual(values = c("darkolivegreen3", "orange3")) +
                         xlim + 
+                        # the fitted date is marked in red on the map
                         geom_point(aes(x=troop1[fitRow(),2], 
                                        y=troop1[fitRow(),3]), 
                                    color = "red", size = 7)
                 march
   })
         output$textSurvivors <- renderUI({
+                # text line below the troop strength chart
                 line1 <- paste("At", as.character(troop1[fitRow(),7]), 
                                "Napoleon had", sep = " ")
                 line2 <- paste(round(troop1[fitRow(),4]/troop1[1,4],2)*100, 
@@ -55,6 +58,7 @@ shinyServer(function(input, output) {
                 HTML(paste(line1, line2, sep = ' '))
         })
         output$plotSurvivors <- renderPlot({
+                # troop strength chart with the current % for the fitted date in red
                 ggplot(data = troop1, aes(date, survivors)) + 
                         geom_step() + 
                         geom_hline(aes(yintercept=troop1[fitRow(),4]),
